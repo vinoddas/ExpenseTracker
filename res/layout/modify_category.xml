@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:orientation="vertical"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent">
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="@string/category_text" />
+        <EditText
+                android:id="@+id/modify_category_new_category"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:ems="10" />
+        <Button
+                android:id="@+id/modify_category_add_new_category_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_button"/>
+    </TableRow>
+    <TableRow>
+        <TextView
+                android:id="@+id/modify_category_error_dialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="3"/>
+    </TableRow>
+</TableLayout>
