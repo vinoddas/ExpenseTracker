@@ -59,17 +59,15 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
         resetFields();
         if (CommonUtil.isNetworkConnected(getActivity())) {
             refreshHistoryAsync(ALL_CATEGORIES);
-            new GetRowsTask(getActivity(), new GetCategoriesListener()).execute(
-                    CommonUtil.getCategoriesSheetName(getActivity()));
         } else {
             refreshHistoryWidget(null, null, 0);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            List<String> categories = new ArrayList<String>();
-            categories.add(ALL_CATEGORIES);
-            if (prefs.contains(CATEGORIES_PREF_KEY)) {
-                categories.addAll(prefs.getStringSet(CATEGORIES_PREF_KEY, null));
-                setCategoriesSpinner(categories);
-            }
+        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        List<String> categories = new ArrayList<String>();
+        categories.add(ALL_CATEGORIES);
+        if (prefs.contains(CATEGORIES_PREF_KEY)) {
+            categories.addAll(prefs.getStringSet(CATEGORIES_PREF_KEY, null));
+            setCategoriesSpinner(categories);
         }
     }
 
@@ -195,26 +193,6 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                 return false;
             }
             refreshHistoryWidget(history, mCategory, mNumRows);
-            return true;
-        }
-    }
-
-    private class GetCategoriesListener implements GetRowsListener {
-        @Override
-        public boolean onGetRowsCompleted(List<Map<String, String>> rows) {
-            if (rows == null) {
-                return false;
-            }
-            List<String> categories = new ArrayList<String>();
-            categories.add(ALL_CATEGORIES);
-            for (Map<String, String> row : rows) {
-                if (row.containsKey("categories")) {
-                    categories.add(row.get("categories"));
-                }
-            }
-            Log.d(TAG, "Found " + categories.size() + " categories.");
-            setCategoriesSpinner(categories);
-
             return true;
         }
     }
