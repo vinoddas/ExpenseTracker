@@ -1,14 +1,15 @@
 package com.vinodkrishnan.expenses.view.fragment;
 
+import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
+import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
+
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,30 +17,27 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
 import com.vinodkrishnan.expenses.R;
-import com.vinodkrishnan.expenses.auth.AndroidAuthenticator;
-import com.vinodkrishnan.expenses.sp.SpreadSheet;
-import com.vinodkrishnan.expenses.sp.SpreadSheetFactory;
-import com.vinodkrishnan.expenses.sp.WorkSheet;
 import com.vinodkrishnan.expenses.tasks.AddRowListener;
 import com.vinodkrishnan.expenses.tasks.AddRowTask;
 import com.vinodkrishnan.expenses.tasks.GetRowsListener;
 import com.vinodkrishnan.expenses.tasks.GetRowsTask;
 import com.vinodkrishnan.expenses.util.CommonUtil;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.IOException;
+import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class EnterExpenseFragment extends Fragment implements View.OnClickListener, AddRowListener {
     private final String TAG = "EnterExpenseFragment";
@@ -47,7 +45,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     private static final String BY_PREF_KEY = "com.vinodkrishnan.expenses.pref_by";
     private static final String TYPE_PREF_KEY = "com.vinodkrishnan.expenses.pref_type";
 
-    private List<String> mCategories;
+    private final Set<String> mCategories = new TreeSet<String>();
     private SharedPreferences mPrefs;
 
     private Spinner mCategorySpinner;
@@ -83,10 +81,17 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         if (CommonUtil.isNetworkConnected(getActivity())) {
             new GetRowsTask(getActivity(), new GetCategoriesListener()).execute(
                     CommonUtil.getCategoriesSheetName(getActivity()));
-            setDefaults();
+            syncOfflineExpenses();
         } else {
-            CommonUtil.showDialog(mErrorDialogTextView, "Network connection does not seem to exist!", Color.RED);
+            if (mPrefs.contains(CATEGORIES_PREF_KEY)) {
+                synchronized (mCategories) {
+                    mCategories.clear();
+                    mCategories.addAll(mPrefs.getStringSet(CATEGORIES_PREF_KEY, null));
+                    setCategoriesSpinner();
+                }
+            }
         }
+        setDefaults();
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -105,45 +110,91 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    private void addExpenseAsync() {
-        if (!CommonUtil.isNetworkConnected(getActivity())) {
-            CommonUtil.showDialog(mErrorDialogTextView, "Network connection does not seem to exist!", Color.RED);
-            return;
+    @Override
+    public boolean onAddRowCompleted(boolean addSucceeded) {
+        if (addSucceeded) {
+            CommonUtil.showDialog(mErrorDialogTextView, "Expense/Income added!", Color.YELLOW);
+            resetFields();
+            return true;
+        } else {
+            CommonUtil.showDialog(mErrorDialogTextView, "Some error during adding expense!", Color.RED);
+            return false;
         }
+    }
 
+    private void addExpenseAsync() {
+        Map<String, String> values = constructValues();
+        if (values != null) {
+            if (!CommonUtil.isNetworkConnected(getActivity())) {
+                CommonUtil.showDialog(mErrorDialogTextView, "No network connection, so saving offline", Color.RED);
+                addExpenseOffline(values);
+            } else {
+                addValues(values);
+            }
+        }
+   }
+
+    private Map<String, String> constructValues() {
         double amount = 0.0;
         try {
             amount = Double.parseDouble(mAmountEditText.getText().toString());
             if (amount == 0.0) {
                 CommonUtil.showDialog(mErrorDialogTextView, "Amount cannot be 0.", Color.RED);
-                return;
+                return null;
             }
         } catch (NumberFormatException e) {
             CommonUtil.showDialog(mErrorDialogTextView, "Amount has to be a number greater than 0.", Color.RED);
-            return;
+            return null;
         }
 
-        // Just in case the categories got change in between loading the application and submitting an expense.
-        String category = mCategorySpinner.getSelectedItem().toString();
-        if (!mCategories.contains(category)) {
-            setCategoriesSpinner();
-            CommonUtil.showDialog(mErrorDialogTextView, "Categories got changed!", Color.RED);
-            return;
-        }
         String type = mTypeSpinner.getSelectedItem().toString();
-        DecimalFormat df = new DecimalFormat("#.00");
         // TODO: Verify the keys by checking the column headers in the worksheet.
         Map<String, String> values = new HashMap<String, String>();
         String date = mDateTextView.getText().toString();
         values.put("date", date);
         // Set a negative number if it is Income.
-        values.put("amount", df.format("Income".equals(type) ? -amount : amount));
-        values.put("category", category);
+        values.put("amount", new DecimalFormat("#.00").format(
+                "Income".equals(type) ? -amount : amount));
+        values.put("category", mCategorySpinner.getSelectedItem().toString());
         values.put("by", mBySpinner.getSelectedItem().toString());
         values.put("description", mDescriptionEditText.getText().toString());
 
+        return values;
+    }
+
+    private void addValues(Map<String, String> values) {
+        String date = values.get("date");
+        String category = values.get("category");
+        synchronized (mCategories) {
+            if (!mCategories.contains(category)) {
+                setCategoriesSpinner();
+                CommonUtil.showDialog(mErrorDialogTextView, "Categories got changed!", Color.RED);
+                return;
+            }
+        }
         new AddRowTask(getActivity(), this, date.substring(date.lastIndexOf("/") + 1))
                 .execute(values);
+    }
+
+    private void addExpenseOffline(Map<String, String> values) {
+        Set<String> offlineExpenses;
+        if (mPrefs.contains(EXPENSES_PREF_KEY)) {
+            offlineExpenses = mPrefs.getStringSet(EXPENSES_PREF_KEY, null);
+        } else {
+            offlineExpenses = new HashSet<String>();
+        }
+        offlineExpenses.add(new Gson().toJson(values));
+        mPrefs.edit().putStringSet(EXPENSES_PREF_KEY, offlineExpenses).commit();
+    }
+
+    private void syncOfflineExpenses() {
+        if (mPrefs.contains(EXPENSES_PREF_KEY)) {
+            for (String expense : mPrefs.getStringSet(EXPENSES_PREF_KEY, null)) {
+                Log.d(TAG, "Adding offline expense " + expense);
+                addValues(new Gson().fromJson(expense, Map.class));
+            }
+        }
+        mPrefs.edit().remove(EXPENSES_PREF_KEY).commit();
     }
 
     private void setDefaults() {
@@ -173,8 +224,9 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     }
 
     private void setCategoriesSpinner() {
-        if (mCategories != null) {
-            ArrayAdapter adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_dropdown_item, mCategories);
+        synchronized (mCategories) {
+            ArrayAdapter adapter = new ArrayAdapter(getActivity(),
+                    android.R.layout.simple_spinner_dropdown_item, mCategories.toArray(new String[0]));
             mCategorySpinner.setAdapter(adapter);
         }
     }
@@ -189,19 +241,6 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         editor.commit();
     }
 
-    @Override
-    public boolean onAddRowCompleted(boolean addSucceeded) {
-        if (addSucceeded) {
-            CommonUtil.showDialog(mErrorDialogTextView, "Expense/Income added!", Color.YELLOW);
-            resetFields();
-            return true;
-        } else {
-            CommonUtil.showDialog(mErrorDialogTextView, "Some error during adding expense!", Color.RED);
-            return false;
-        }
-    }
-
-
     private class GetCategoriesListener implements GetRowsListener {
         @Override
         public boolean onGetRowsCompleted(List<Map<String, String>> rows) {
@@ -209,15 +248,20 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
                 return false;
             }
 
-            List<String> categories = new ArrayList<String>();
-            for (Map<String, String> row : rows) {
-                if (row.containsKey("categories")) {
-                    categories.add(row.get("categories"));
+            synchronized (mCategories) {
+                mCategories.clear();
+                for (Map<String, String> row : rows) {
+                    if (row.containsKey("categories")) {
+                        mCategories.add(row.get("categories"));
+                    }
                 }
+                Log.d(TAG, "Found " + mCategories.size() + " categories.");
+                // Store the categories in prefs.
+                SharedPreferences.Editor editor = mPrefs.edit();
+                editor.putStringSet(CATEGORIES_PREF_KEY, mCategories);
+                editor.commit();
             }
-            Log.d(TAG, "Found " + (categories == null ? 0 : categories.size()) + " categories.");
-            EnterExpenseFragment.this.mCategories = categories;
-            EnterExpenseFragment.this.setCategoriesSpinner();
+            setCategoriesSpinner();
 
             return true;
         }

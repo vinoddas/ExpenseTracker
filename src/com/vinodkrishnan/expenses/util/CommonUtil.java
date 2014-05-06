@@ -3,18 +3,27 @@ package com.vinodkrishnan.expenses.util;
 import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.TextView;
 import com.vinodkrishnan.expenses.R;
 import com.vinodkrishnan.expenses.view.fragment.SettingsFragment;
 
-/**
- *
- */
 public class CommonUtil {
+    public static final String CATEGORIES_PREF_KEY = "com.vinodkrishnan.expenses.pref_categories";
+    public static final String EXPENSES_PREF_KEY = "com.vinodkrishnan.expenses.pref_expenses";
+
     public static boolean isNetworkConnected(Activity activity) {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm != null && cm.getActiveNetworkInfo() != null;
+        if (cm == null){
+            return false;
+        }
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo == null || !networkInfo.isConnected()) {
+            return false;
+        }
+        return true;
     }
 
     public static void showDialog(TextView dialogView, String message, int color) {
