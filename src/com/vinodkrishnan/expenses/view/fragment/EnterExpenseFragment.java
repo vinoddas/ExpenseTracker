@@ -82,14 +82,6 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
             new GetRowsTask(getActivity(), new GetCategoriesListener()).execute(
                     CommonUtil.getCategoriesSheetName(getActivity()));
             syncOfflineExpenses();
-        } else {
-            if (mPrefs.contains(CATEGORIES_PREF_KEY)) {
-                synchronized (mCategories) {
-                    mCategories.clear();
-                    mCategories.addAll(mPrefs.getStringSet(CATEGORIES_PREF_KEY, null));
-                    setCategoriesSpinner();
-                }
-            }
         }
         setDefaults();
         super.onActivityCreated(savedInstanceState);
@@ -220,6 +212,13 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
                 mTypeSpinner.setSelection(adapter.getPosition(mPrefs.getString(TYPE_PREF_KEY, "")));
             }
 
+        }
+        if (mPrefs.contains(CATEGORIES_PREF_KEY)) {
+            synchronized (mCategories) {
+                mCategories.clear();
+                mCategories.addAll(mPrefs.getStringSet(CATEGORIES_PREF_KEY, null));
+                setCategoriesSpinner();
+            }
         }
     }
 

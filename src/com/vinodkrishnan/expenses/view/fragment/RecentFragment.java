@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +27,15 @@ import com.vinodkrishnan.expenses.tasks.GetRowsListener;
 import com.vinodkrishnan.expenses.tasks.GetRowsTask;
 import com.vinodkrishnan.expenses.util.CommonUtil;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class RecentFragment extends Fragment implements View.OnClickListener {
@@ -37,7 +43,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
 
     private static final String ALL_CATEGORIES = "ALL";
 
-    private TextView mNumRowsTextView;
+    private TextView mNumDaysTextView;
     private TextView mLastRefreshedTextView;
     private Spinner mCategorySpinner;
 
@@ -46,7 +52,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.recent_transactions, container, false);
         rootView.findViewById(R.id.choose_recent_button).setOnClickListener(this);
-        mNumRowsTextView = (TextView)rootView.findViewById(R.id.number_of_days);
+        mNumDaysTextView = (TextView)rootView.findViewById(R.id.number_of_days);
         mLastRefreshedTextView = (TextView)rootView.findViewById(R.id.last_refreshed_dialog);
         mCategorySpinner = (Spinner) rootView.findViewById(R.id.recent_category);
 
@@ -81,7 +87,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     }
 
     private void resetFields() {
-        mNumRowsTextView.setText("10");
+        mNumDaysTextView.setText("10");
     }
 
     private void setCategoriesSpinner(List<String> categories) {
@@ -96,18 +102,21 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     private void refreshHistoryAsync(String category) {
         final Calendar cal = Calendar.getInstance();
         String year = Integer.toString(cal.get(Calendar.YEAR));
-        int numRows = 0;
-        CharSequence numRowsCharSeq = mNumRowsTextView.getText();
-        if (!TextUtils.isEmpty(numRowsCharSeq) && TextUtils.isDigitsOnly(numRowsCharSeq)) {
-            numRows = Integer.parseInt(numRowsCharSeq.toString());
+        int numDays = 0;
+        CharSequence numDaysCharSeq = mNumDaysTextView.getText();
+        if (!TextUtils.isEmpty(numDaysCharSeq) && TextUtils.isDigitsOnly(numDaysCharSeq)) {
+            numDays = Integer.parseInt(numDaysCharSeq.toString());
         }
         mLastRefreshedTextView.setText("Loading...");
-        new GetRowsTask(getActivity(), new GetHistoryListener(category, numRows)).execute(year);
+        new GetRowsTask(getActivity(), new GetHistoryListener(category, numDays)).execute(year);
     }
 
-    private void refreshHistoryWidget(List<Map<String, String>> history, String category, int numRows) {
+    private void refreshHistoryWidget(List<Map<String, String>> history,
+            String category, int numDays) {
+        final Date now = new Date();
         TableLayout table = (TableLayout)getActivity().findViewById(R.id.summary_table);
         table.removeAllViews();
+        // Show all the offline transactions first.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         if (prefs.contains(EXPENSES_PREF_KEY)) {
             for (String expense : prefs.getStringSet(EXPENSES_PREF_KEY, null)) {
@@ -116,24 +125,28 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
         }
 
         if (history != null) {
-            if (numRows >= 0) {
-                int startIndex = history.size() > numRows ? history.size() - numRows : 0;
-                history = history.subList(startIndex, history.size());
-            }
-
-            // Remove all the rows that are not the chosen category.
-            if (!ALL_CATEGORIES.equals(category)) {
-                Iterator<Map<String, String>> iterator = history.iterator();
-                while (iterator.hasNext()) {
-                    Map<String, String> row = iterator.next();
-                    if (row.containsKey("category") && !category.equals(row.get("category"))) {
-                        iterator.remove();
+            Iterator<Map<String, String>> iterator = history.iterator();
+            while (iterator.hasNext()) {
+                Map<String, String> row = iterator.next();
+                if (!ALL_CATEGORIES.equals(category) && row.containsKey("category") && !category.equals(row.get("category"))) {
+                    iterator.remove();
+                }
+                if (row.containsKey("date")) {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+                        Date date = sdf.parse(row.get("date"));
+                        if (now.getTime() - date.getTime() > numDays * DateUtils.DAY_IN_MILLIS) {
+                            iterator.remove();
+                        }
+                    } catch (ParseException e) {
+                        Log.e(TAG, "Could not parse date.", e);
                     }
                 }
             }
-            for (Map<String, String> historyRow : history) {
+
+            for (int i = history.size() - 1; i >=0 ; i--) {
                 // Inflate your row "template" and fill out the fields.
-                table.addView(inflateTableRow(historyRow, false));
+                table.addView(inflateTableRow(history.get(i), false));
             }
         }
         table.requestLayout();
@@ -181,10 +194,10 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
 
     private class GetHistoryListener implements GetRowsListener {
         private String mCategory;
-        private int mNumRows;
-        public GetHistoryListener(String category, int numRows) {
+        private int mNumDays;
+        public GetHistoryListener(String category, int numDays) {
             mCategory = category;
-            mNumRows = numRows;
+            mNumDays = numDays;
         }
 
         @Override
@@ -192,7 +205,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
             if (history == null) {
                 return false;
             }
-            refreshHistoryWidget(history, mCategory, mNumRows);
+            refreshHistoryWidget(history, mCategory, mNumDays);
             return true;
         }
     }
