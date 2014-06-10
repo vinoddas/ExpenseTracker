@@ -114,7 +114,13 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     private void refreshHistoryWidget(List<Map<String, String>> history,
             String category, int numDays) {
         final Date now = new Date();
+        if (getActivity() == null) {
+            return;
+        }
         TableLayout table = (TableLayout)getActivity().findViewById(R.id.summary_table);
+        if (table == null) {
+            return;
+        }
         table.removeAllViews();
         // Show all the offline transactions first.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());

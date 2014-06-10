@@ -78,13 +78,14 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        if (CommonUtil.isNetworkConnected(getActivity())) {
+        super.onActivityCreated(savedInstanceState);
+        boolean networkConnected = CommonUtil.isNetworkConnected(getActivity());
+        if (networkConnected) {
             new GetRowsTask(getActivity(), new GetCategoriesListener()).execute(
                     CommonUtil.getCategoriesSheetName(getActivity()));
             syncOfflineExpenses();
         }
         setDefaults();
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
