@@ -44,6 +44,8 @@ public class GetRowsTask extends AsyncTask<String, Integer, List<Map<String, Str
 
     @Override
     protected void onPostExecute(List<Map<String, String>> rows) {
-        mListener.onGetRowsCompleted(rows);
+        if (mListener != null) {
+            mListener.onGetRowsCompleted(rows);
+        }
     }
 }

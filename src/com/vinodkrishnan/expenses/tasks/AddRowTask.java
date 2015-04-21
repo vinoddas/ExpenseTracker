@@ -33,12 +33,12 @@ public class AddRowTask extends AsyncTask<Map<String, String>, Integer, Boolean>
                 CommonUtil.getSpreadsheetName(mActivity));
         if (spreadSheet == null) {
             Log.e(TAG, "Could not find spreadsheet, maybe there is no internet.");
-            return null;
+            return false;
         }
         WorkSheet workSheet = spreadSheet.getWorkSheet(mSheetName, true);
         if (workSheet == null) {
             Log.e(TAG, "Could not find the \"" + mSheetName + "\" worksheet.");
-            return null;
+            return false;
         }
 
         return workSheet.addRow(params[0]);
@@ -46,7 +46,9 @@ public class AddRowTask extends AsyncTask<Map<String, String>, Integer, Boolean>
 
     @Override
     protected void onPostExecute(Boolean addSucceeded) {
-        mListener.onAddRowCompleted(addSucceeded);
+        if (mListener != null) {
+            mListener.onAddRowCompleted(addSucceeded);
+        }
     }
 
 }
