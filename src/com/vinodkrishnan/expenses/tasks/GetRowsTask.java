@@ -26,7 +26,7 @@ public class GetRowsTask extends AsyncTask<String, Integer, List<Map<String, Str
 
     @Override
     protected List<Map<String, String>> doInBackground(String... params) {
-        mSpreadSheetFactory = SpreadSheetFactory.getInstance(new AndroidAuthenticator(mActivity));
+        mSpreadSheetFactory = SpreadSheetFactory.getInstance(mActivity);
         SpreadSheet spreadSheet = mSpreadSheetFactory.getSpreadSheet(
                 CommonUtil.getSpreadsheetName(mActivity));
         if (spreadSheet == null) {

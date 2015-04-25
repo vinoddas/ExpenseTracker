@@ -89,7 +89,7 @@ public class SpreadSheet {
     private void loadWorkSheetsFromServer() {
         try {
             HttpGet httpGet = new HttpGet("https://spreadsheets.google.com/feeds/worksheets/" + key + "/private/full");
-            httpGet.setHeader("Authorization", "GoogleLogin auth="+ mAuthToken);
+            httpGet.setHeader("Authorization", "GoogleLogin auth=" + mAuthToken);
             httpGet.setHeader("GData-Version", "3.0");
             HttpResponse response = mHttpClient.execute(httpGet);
             HttpEntity entity = response.getEntity();

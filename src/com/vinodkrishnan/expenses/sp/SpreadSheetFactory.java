@@ -1,7 +1,10 @@
 package com.vinodkrishnan.expenses.sp;
 
+import android.app.Activity;
 import android.util.Log;
 import android.util.Xml;
+
+import com.vinodkrishnan.expenses.auth.AndroidAuthenticator;
 import com.vinodkrishnan.expenses.auth.Authenticator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -23,7 +26,6 @@ public class SpreadSheetFactory {
     private String TAG = "SpreadSheetFactory";
 
     private final String SP_GET_LIST_URL = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
-    private final static String SPREADSHEET_API_SERVICE_NAME = "wise";
 
     private static SpreadSheetFactory mInstance;
 
@@ -32,15 +34,14 @@ public class SpreadSheetFactory {
 
     private String mAuthToken;
 
-
     private SpreadSheetFactory(Authenticator authenticator) {
         mAuthenticator = authenticator;
         mHttpClient = new DefaultHttpClient();
     }
 
-    public static SpreadSheetFactory getInstance(Authenticator authenticator) {
-        if (mInstance == null && authenticator != null) {
-            mInstance = new SpreadSheetFactory(authenticator);
+    public static SpreadSheetFactory getInstance(Activity activity) {
+        if (mInstance == null && activity != null) {
+            mInstance = new SpreadSheetFactory(new AndroidAuthenticator(activity));
         }
         return mInstance;
     }
@@ -50,8 +51,9 @@ public class SpreadSheetFactory {
     }
 
     public SpreadSheet getSpreadSheet(String title) {
-        mAuthToken = mAuthenticator.getAuthToken(SPREADSHEET_API_SERVICE_NAME, true);
-
+        if (mAuthToken == null) {
+            mAuthToken = mAuthenticator.getAuthToken();
+        }
         SpreadSheet spreadSheet = null;
         try {
             HttpGet httpGet = new HttpGet(SP_GET_LIST_URL + "?title=" + URLEncoder.encode(title, "UTF-8") + "&title-exact=true");

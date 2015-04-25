@@ -16,12 +16,11 @@ import java.util.Set;
  * @author Vinod Krishnan
  */
 public class AndroidAuthenticator implements Authenticator {
-
     private final String TAG = "AndroidAuthenticator";
     Activity mActivity;
     AccountManager mManager;
-    private String mService = null;
     private String mAuthToken = "";
+    private final static String SPREADSHEET_API_SERVICE_NAME = "wise";
 
     private Set<String> mAccountNames = new HashSet<String> (Arrays.asList(new String[] {
             "namitamangalath@gmail.com",
@@ -34,16 +33,7 @@ public class AndroidAuthenticator implements Authenticator {
     }
 
     @Override
-    public String getAuthToken(String service, boolean invalidate) {
-        if (service == null) {
-            throw new IllegalAccessError("No Service name defined, Can't create Auth Token...");
-        }
-
-        if (invalidate || (mService != null && !mService.equals(service))) {
-            // Reset previous Token
-            mManager.invalidateAuthToken("com.google", mAuthToken);
-        }
-
+    public String getAuthToken() {
         Account[] acs = mManager.getAccountsByType("com.google");
         Log.i(TAG, "Num of Matching account: " + acs.length);
 
@@ -57,7 +47,8 @@ public class AndroidAuthenticator implements Authenticator {
                 // The first Account in the list above will be chosen.
                 Log.i(TAG, "Selected Google Account " + acs[i].name);
                 AccountManagerFuture result = (AccountManagerFuture) (
-                        mManager.getAuthToken(acs[i], service, null, mActivity, null, null));
+                        mManager.getAuthToken(acs[i], SPREADSHEET_API_SERVICE_NAME, null, mActivity,
+                                null, null));
 
                 try {
                     Bundle b = (Bundle) result.getResult();
@@ -65,7 +56,7 @@ public class AndroidAuthenticator implements Authenticator {
                     Log.i(TAG, "Auth_Token: " + mAuthToken);
                     return mAuthToken;
                 } catch (Exception ex) {
-                    Log.i(TAG, "Error: " + ex.toString());
+                    Log.e(TAG, "Error: ", ex);
                 }
             }
         }

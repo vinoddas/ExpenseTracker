@@ -28,7 +28,7 @@ public class AddRowTask extends AsyncTask<Map<String, String>, Integer, Boolean>
 
     @Override
     protected Boolean doInBackground(Map<String, String>... params) {
-        mSpreadSheetFactory = SpreadSheetFactory.getInstance(new AndroidAuthenticator(mActivity));
+        mSpreadSheetFactory = SpreadSheetFactory.getInstance(mActivity);
         SpreadSheet spreadSheet = mSpreadSheetFactory.getSpreadSheet(
                 CommonUtil.getSpreadsheetName(mActivity));
         if (spreadSheet == null) {

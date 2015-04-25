@@ -81,7 +81,9 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.choose_recent_button:
-                refreshHistoryAsync(mCategorySpinner.getSelectedItem().toString());
+                if (mCategorySpinner.getSelectedItem() != null) {
+                    refreshHistoryAsync(mCategorySpinner.getSelectedItem().toString());
+                }
                 break;
         }
     }

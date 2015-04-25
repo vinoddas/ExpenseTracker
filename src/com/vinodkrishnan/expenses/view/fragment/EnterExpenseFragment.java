@@ -20,6 +20,8 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.vinodkrishnan.expenses.R;
+import com.vinodkrishnan.expenses.sp.SpreadSheet;
+import com.vinodkrishnan.expenses.sp.SpreadSheetFactory;
 import com.vinodkrishnan.expenses.tasks.AddRowListener;
 import com.vinodkrishnan.expenses.tasks.AddRowTask;
 import com.vinodkrishnan.expenses.tasks.GetRowsListener;
@@ -118,7 +120,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     private void addExpenseAsync() {
         Map<String, String> values = constructValues();
         if (values != null) {
-            if (!CommonUtil.isNetworkConnected(getActivity())) {
+            if (!CommonUtil.isNetworkConnected(getActivity()) ||
+                    SpreadSheetFactory.getInstance(getActivity()).getAuthToken() == null) {
                 CommonUtil.showDialog(mErrorDialogTextView, "No network connection, so saving offline", Color.RED);
                 addExpenseOffline(values);
             } else {
