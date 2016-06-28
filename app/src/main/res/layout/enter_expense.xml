@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:orientation="vertical"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+        >
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/date_text" />
+        <TextView
+                android:id="@+id/enter_expense_date"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:ems="10"/>
+        <Button
+                android:id="@+id/enter_expense_pick_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pick_date_button"/>
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/type_text" />
+        <Spinner
+                android:id="@+id/enter_expense_type"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_span="2" />
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/amount_text" />
+        <EditText
+                android:id="@+id/enter_expense_amount"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:inputType="numberDecimal"
+                android:layout_span="2"
+                android:ems="10" />
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/category_text" />
+        <Spinner
+                android:id="@+id/enter_expense_category"
+                android:layout_width="fill_parent"
+                android:layout_span="2"
+                android:layout_height="fill_parent" />
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/by_text" />
+        <Spinner
+                android:id="@+id/enter_expense_by"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_span="2" />
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/description_text" />
+        <EditText
+                android:id="@+id/enter_expense_description"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="top"
+                android:lines="3"
+                android:layout_span="2"
+                android:ems="10" />
+    </TableRow>
+    <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="5dip">
+        <Button
+                android:id="@+id/enter_expense_add_expense_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="3"
+                android:text="@string/add_button"/>
+    </TableRow>
+
+
+</TableLayout>
+

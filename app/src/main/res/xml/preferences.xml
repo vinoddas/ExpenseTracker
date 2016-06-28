@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="pref_spreadsheet_id"
+        android:title="@string/pref_spreadsheet_id"
+        android:defaultValue="@string/pref_spreadsheet_id_default" />
+    <EditTextPreference
+            android:key="pref_categories_name"
+            android:title="@string/pref_categories_name"
+            android:defaultValue="@string/pref_categories_name_default" />
+
+</PreferenceScreen>
