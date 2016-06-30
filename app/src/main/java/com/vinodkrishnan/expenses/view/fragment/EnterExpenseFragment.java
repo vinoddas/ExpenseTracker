@@ -1,8 +1,5 @@
 package com.vinodkrishnan.expenses.view.fragment;
 
-import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
-import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
-
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -36,11 +33,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static com.vinodkrishnan.expenses.util.CommonUtil.AMOUNT_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.BY_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
+import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORY_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.DATE_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.DESCRIPTION_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
+
 public class EnterExpenseFragment extends Fragment implements View.OnClickListener, AddRowTask.AddRowListener {
     private final String TAG = "EnterExpenseFragment";
 
     private static final String BY_PREF_KEY = "com.vinodkrishnan.expenses.pref_by";
     private static final String TYPE_PREF_KEY = "com.vinodkrishnan.expenses.pref_type";
+
+    private static final String CATEGORIES_CELL = "Categories";
 
     private final Set<String> mCategories = new TreeSet<String>();
     private SharedPreferences mPrefs;
@@ -106,7 +113,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onAddRowCompleted() {
-        CommonUtil.showToast(getActivity(), "Expense/Income added!");
+        CommonUtil.showToast(getActivity(), R.string.expense_added);
         resetFields();
     }
 
@@ -114,7 +121,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         Map<String, String> values = constructValues();
         if (values != null) {
             if (!CommonUtil.isNetworkConnected(getActivity())) {
-                CommonUtil.showErrorDialog(getActivity(), "No network connection, so saving offline");
+                CommonUtil.showErrorDialog(getActivity(), R.string.error_saving_offline);
                 addExpenseOffline(values);
             } else {
                 addValues(values);
@@ -127,11 +134,11 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         try {
             amount = Double.parseDouble(mAmountEditText.getText().toString());
             if (amount == 0.0) {
-                CommonUtil.showErrorDialog(getActivity(), "Amount cannot be 0.");
+                CommonUtil.showErrorDialog(getActivity(), R.string.error_amount_positive);
                 return null;
             }
         } catch (NumberFormatException e) {
-            CommonUtil.showErrorDialog(getActivity(), "Amount has to be a number greater than 0.");
+            CommonUtil.showErrorDialog(getActivity(), R.string.error_amount_positive);
             return null;
         }
 
@@ -152,14 +159,6 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
 
     private void addValues(Map<String, String> values) {
         String date = values.get("Date");
-        String category = values.get("Category");
-        synchronized (mCategories) {
-            if (!mCategories.contains(category)) {
-                setCategoriesSpinner();
-                CommonUtil.showErrorDialog(getActivity(), "Categories got changed!");
-                return;
-            }
-        }
         new AddRowTask(getActivity(), this, date.substring(date.lastIndexOf("/") + 1))
                 .execute(convertMapToCellData(values));
     }
@@ -169,15 +168,15 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         // TODO: The ordering and keys are hardcoded here, verify the ordering
         // Date, Amount, Category, By, Description.
         cellDataList.add(new CellData().setUserEnteredValue(
-                new ExtendedValue().setStringValue(values.get("Date"))));
+                new ExtendedValue().setStringValue(values.get(DATE_COLUMN))));
         cellDataList.add(new CellData().setUserEnteredValue(
-                new ExtendedValue().setStringValue(values.get("Amount"))));
+                new ExtendedValue().setStringValue(values.get(AMOUNT_COLUMN))));
         cellDataList.add(new CellData().setUserEnteredValue(
-                new ExtendedValue().setStringValue(values.get("Category"))));
+                new ExtendedValue().setStringValue(values.get(CATEGORY_COLUMN))));
         cellDataList.add(new CellData().setUserEnteredValue(
-                new ExtendedValue().setStringValue(values.get("By"))));
+                new ExtendedValue().setStringValue(values.get(BY_COLUMN))));
         cellDataList.add(new CellData().setUserEnteredValue(
-                new ExtendedValue().setStringValue(values.get("Description"))));
+                new ExtendedValue().setStringValue(values.get(DESCRIPTION_COLUMN))));
         return cellDataList;
     }
 
@@ -264,8 +263,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
             synchronized (mCategories) {
                 mCategories.clear();
                 for (Map<String, String> row : rows) {
-                    if (row.containsKey("Categories")) {
-                        mCategories.add(row.get("Categories"));
+                    if (row.containsKey(CATEGORIES_CELL)) {
+                        mCategories.add(row.get(CATEGORIES_CELL));
                     }
                 }
                 Log.d(TAG, "Found " + mCategories.size() + " categories.");

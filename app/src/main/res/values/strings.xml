@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ExpenseTracker</string>
+    <string name="app_name">Expense Tracker</string>
 
     <string name="action_settings">Settings</string>
     <string name="date_text">* Date</string>
@@ -22,15 +22,16 @@
 
     <string name="dialog_error">Error</string>
     <string name="dialog_ok">OK</string>
-    <string-array name="by_entries">
-        <item>Vinod</item>
-        <item>Namita</item>
-        <item>Both</item>
-    </string-array>
 
-    <string-array name="type_entries">
-        <item>Expense</item>
-        <item>Income</item>
-    </string-array>
-
+    <string name="needs_permission">This app needs to access your Google account (via Contacts).</string>
+    <string name="error_connect_spreadsheet">An error has occurred talking to the spreadsheet</string>
+    <string name="error_required_google_play_services">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
+    <string name="error_no_network">No network connection.</string>
+    <string name="error_saving_offline">No network connection, so saving offline.</string>
+    <string name="error_amount_positive">Amount has to be a number greater than 0.</string>
+    <string name="error_category_empty">New category cannot be empty.</string>
+    <string name="category_added">Category added!</string>
+    <string name="expense_added">Income/Expense added!</string>
+    <string name="loading">Loading...</string>
+    <string name="default_recent_days">10</string>
 </resources>

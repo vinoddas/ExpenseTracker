@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tab_titles">
+        <item>Expense</item>
+        <item>Category</item>
+        <item>Recent</item>
+    </string-array>
+    <string-array name="by_entries">
+        <item>Vinod</item>
+        <item>Namita</item>
+        <item>Both</item>
+    </string-array>
+
+    <string-array name="type_entries">
+        <item>Expense</item>
+        <item>Income</item>
+    </string-array>
+</resources>

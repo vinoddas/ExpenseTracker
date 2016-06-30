@@ -12,6 +12,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.vinodkrishnan.expenses.R;
 import com.vinodkrishnan.expenses.util.CommonUtil;
 import com.vinodkrishnan.expenses.view.activity.MainActivity;
 
@@ -105,7 +106,7 @@ public class CredentialStore {
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(mActivity,
-                    "This app needs to access your Google account (via Contacts).",
+                    mActivity.getString(R.string.needs_permission),
                     MainActivity.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }

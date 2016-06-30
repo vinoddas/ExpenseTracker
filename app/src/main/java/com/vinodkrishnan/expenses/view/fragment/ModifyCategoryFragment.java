@@ -44,13 +44,13 @@ public class ModifyCategoryFragment extends Fragment implements View.OnClickList
     private void addCategoryAsync() {
         Activity activity = getActivity();
         if (!CommonUtil.isNetworkConnected(activity)) {
-            CommonUtil.showErrorDialog(activity, "Network connection does not seem to exist!");
+            CommonUtil.showErrorDialog(activity, R.string.error_no_network);
             return;
         }
 
         String newCategory = mNewCategoryEditText.getText().toString();
         if (newCategory == null || newCategory.isEmpty()) {
-            CommonUtil.showErrorDialog(activity, "New category can't be empty.");
+            CommonUtil.showErrorDialog(activity, R.string.error_category_empty);
             return;
         }
 
@@ -61,7 +61,8 @@ public class ModifyCategoryFragment extends Fragment implements View.OnClickList
 
     @Override
     public void onAddRowCompleted() {
-        CommonUtil.showToast(getActivity(), "Category added!");
+        CommonUtil.showToast(getActivity(), R.string.category_added);
+        mNewCategoryEditText.setText("");
         getActivity().recreate();
     }
 }

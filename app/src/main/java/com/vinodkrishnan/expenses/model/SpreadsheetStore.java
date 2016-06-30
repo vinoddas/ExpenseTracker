@@ -16,6 +16,7 @@ import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.SheetProperties;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.vinodkrishnan.expenses.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class SpreadsheetStore {
             }
             mService = new Sheets.Builder(AndroidHttp.newCompatibleTransport(),
                     JacksonFactory.getDefaultInstance(), credential)
-                    .setApplicationName("Expense Tracker")
+                    .setApplicationName(mActivity.getString(R.string.app_name))
                     .build();
         }
         return mService;

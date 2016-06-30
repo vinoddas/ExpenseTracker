@@ -1,8 +1,5 @@
 package com.vinodkrishnan.expenses.view.fragment;
 
-import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
-import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
-
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -36,10 +33,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.vinodkrishnan.expenses.util.CommonUtil.AMOUNT_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.BY_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
+import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORY_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.DATE_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.DESCRIPTION_COLUMN;
+import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
+
 public class RecentFragment extends Fragment implements View.OnClickListener {
     private final String TAG = "RecentFragment";
 
     private static final String ALL_CATEGORIES = "ALL";
+    private static final String DATE_FORMAT = "MM/dd/yyyy";
 
     private TextView mNumDaysTextView;
     private TextView mLastRefreshedTextView;
@@ -87,7 +93,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     }
 
     private void resetFields() {
-        mNumDaysTextView.setText("10");
+        mNumDaysTextView.setText(getActivity().getString(R.string.default_recent_days));
     }
 
     private void setCategoriesSpinner(List<String> categories) {
@@ -107,7 +113,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
         if (!TextUtils.isEmpty(numDaysCharSeq) && TextUtils.isDigitsOnly(numDaysCharSeq)) {
             numDays = Integer.parseInt(numDaysCharSeq.toString());
         }
-        mLastRefreshedTextView.setText("Loading...");
+        mLastRefreshedTextView.setText(getActivity().getString(R.string.loading));
         new GetRowsTask(getActivity(), new GetHistoryListener(category, numDays)).execute(year);
     }
 
@@ -134,13 +140,14 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
             Iterator<Map<String, String>> iterator = history.iterator();
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
-                if (!ALL_CATEGORIES.equals(category) && !category.equals(row.get("Category"))) {
+                if (!ALL_CATEGORIES.equals(category) &&
+                        !category.equals(row.get(CATEGORY_COLUMN))) {
                     iterator.remove();
                 }
-                if (row.containsKey("Date") && !TextUtils.isEmpty(row.get("Date"))) {
+                if (row.containsKey(DATE_COLUMN) && !TextUtils.isEmpty(row.get(DATE_COLUMN))) {
                     try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
-                        Date date = sdf.parse(row.get("Date"));
+                        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+                        Date date = sdf.parse(row.get(DATE_COLUMN));
                         if (now.getTime() - date.getTime() > numDays * DateUtils.DAY_IN_MILLIS) {
                             iterator.remove();
                         }
@@ -168,29 +175,29 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
         TableRow row = (TableRow)LayoutInflater.from(getActivity()).inflate(
                 R.layout.summary_row, null);
         TextView rowDate = (TextView)row.findViewById(R.id.summary_row_date);
-        rowDate.setText(rowValues.get("Date"));
+        rowDate.setText(rowValues.get(DATE_COLUMN));
         if (isOffline) {
             rowDate.setTextColor(Color.RED);
         }
         TextView rowAmount = (TextView)row.findViewById(R.id.summary_row_amount);
-        rowAmount.setText(rowValues.get("Amount"));
+        rowAmount.setText(rowValues.get(AMOUNT_COLUMN));
         if (isOffline) {
             rowAmount.setTextColor(Color.RED);
         }
         TextView rowCategory = (TextView)row.findViewById(R.id.summary_row_category);
-        rowCategory.setText(rowValues.get("Category"));
+        rowCategory.setText(rowValues.get(CATEGORY_COLUMN));
         if (isOffline) {
             rowCategory.setTextColor(Color.RED);
         }
         TextView rowBy = (TextView)row.findViewById(R.id.summary_row_by);
-        rowBy.setText(rowValues.get("By"));
+        rowBy.setText(rowValues.get(BY_COLUMN));
         if (isOffline) {
             rowBy.setTextColor(Color.RED);
         }
         if (getResources().getConfiguration().orientation ==
                 Configuration.ORIENTATION_LANDSCAPE) {
             TextView rowDescription = (TextView)row.findViewById(R.id.summary_row_description);
-            rowDescription.setText(rowValues.get("Description"));
+            rowDescription.setText(rowValues.get(DESCRIPTION_COLUMN));
             if (isOffline) {
                 rowDescription.setTextColor(Color.RED);
             }

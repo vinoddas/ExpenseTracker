@@ -37,7 +37,7 @@ public class MainActivity extends FragmentActivity implements EasyPermissions.Pe
 
         // Initialization
         ((ViewPager) findViewById(R.id.pager))
-                .setAdapter(new TabAdapter(getSupportFragmentManager()));
+                .setAdapter(new TabAdapter(this, getSupportFragmentManager()));
         CredentialStore.getInstance(this).loadCredentials();
     }
 
@@ -69,9 +69,7 @@ public class MainActivity extends FragmentActivity implements EasyPermissions.Pe
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
-                    CommonUtil.showErrorDialog(this,
-                            "This app requires Google Play Services. Please install " +
-                                    "Google Play Services on your device and relaunch this app.");
+                    CommonUtil.showErrorDialog(this, R.string.error_required_google_play_services);
                 } else {
                     CredentialStore.getInstance(this).loadCredentials();
                 }

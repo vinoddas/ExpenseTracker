@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.vinodkrishnan.expenses.R;
 import com.vinodkrishnan.expenses.util.CommonUtil;
 import com.vinodkrishnan.expenses.view.activity.MainActivity;
 
@@ -35,8 +36,7 @@ public abstract class BaseTask<Params, Progress, Result>
                         ((UserRecoverableAuthIOException) mLastError).getIntent(),
                         MainActivity.REQUEST_AUTHORIZATION);
             } else {
-                CommonUtil.showErrorDialog(mActivity,
-                        "An error has occurred talking to the spreadsheet");
+                CommonUtil.showErrorDialog(mActivity, R.string.error_connect_spreadsheet);
                 Log.e(TAG, "The following error occurred:\n"
                         + mLastError.getMessage());
             }

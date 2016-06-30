@@ -21,6 +21,12 @@ public class CommonUtil {
     public static final String EXPENSES_PREF_KEY = "com.vinodkrishnan.expenses.pref_expenses";
     public static final String ACCOUNT_NAME_PREF_KEY = "com.vinodkrishnan.expenses.account_name";
 
+    public static final String DATE_COLUMN = "Date";
+    public static final String AMOUNT_COLUMN = "Amount";
+    public static final String CATEGORY_COLUMN = "Category";
+    public static final String BY_COLUMN = "By";
+    public static final String DESCRIPTION_COLUMN = "Description";
+
     public static boolean isNetworkConnected(Activity activity) {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(
                 Context.CONNECTIVITY_SERVICE);
@@ -34,28 +40,28 @@ public class CommonUtil {
         return true;
     }
 
-    public static void showErrorDialog(Context context, String message) {
+    public static void showErrorDialog(Context context, int messageResId) {
         new AlertDialog.Builder(context)
                 .setTitle(R.string.dialog_error)
-                .setMessage(message)
+                .setMessage(context.getString(messageResId))
                 .setPositiveButton(R.string.dialog_ok, null)
                 .show();
     }
 
-    public static void showToast(Context context, String message) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    public static void showToast(Context context, int messageResId) {
+        Toast.makeText(context, context.getString(messageResId), Toast.LENGTH_LONG).show();
     }
 
     public static String getSpreadsheetId(Activity activity) {
         return  PreferenceManager.getDefaultSharedPreferences(activity).getString(
                 SettingsFragment.SPREADSHEET_ID_KEY,
-                activity.getResources().getString(R.string.pref_spreadsheet_id_default));
+                activity.getString(R.string.pref_spreadsheet_id_default));
     }
 
     public static String getCategoriesSheetName(Activity activity) {
         return  PreferenceManager.getDefaultSharedPreferences(activity).getString(
                 SettingsFragment.CATEGORIES_SHEET_NAME_KEY,
-                activity.getResources().getString(R.string.pref_categories_name_default));
+                activity.getString(R.string.pref_categories_name_default));
     }
 
     /**
@@ -66,11 +72,7 @@ public class CommonUtil {
      */
     public static void showGooglePlayServicesAvailabilityErrorDialog(final Activity activity,
             final int connectionStatusCode) {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        Dialog dialog = apiAvailability.getErrorDialog(
-                activity,
-                connectionStatusCode,
-                MainActivity.REQUEST_GOOGLE_PLAY_SERVICES);
-        dialog.show();
+        GoogleApiAvailability.getInstance().getErrorDialog(activity, connectionStatusCode,
+                MainActivity.REQUEST_GOOGLE_PLAY_SERVICES).show();
     }
 }
