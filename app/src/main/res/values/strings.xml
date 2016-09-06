@@ -8,9 +8,12 @@
     <string name="amount_text">* Amount</string>
     <string name="category_text">* Category</string>
     <string name="by_text">* By</string>
+    <string name="row_num_text">Row Num</string>
     <string name="description_text">Description</string>
     <string name="add_button">Add</string>
     <string name="pick_date_button">Pick</string>
+    <string name="edit_button">Edit</string>
+    <string name="cancel_button">Cancel</string>
 
     <string name="number_days_text">Number of days</string>
     <string name="choose_recent_button">Submit</string>

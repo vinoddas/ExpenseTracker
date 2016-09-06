@@ -1,6 +1,7 @@
 package com.vinodkrishnan.expenses.view.adapter;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -15,17 +16,23 @@ import com.vinodkrishnan.expenses.view.fragment.ModifyCategoryFragment;
  */
 public class TabAdapter extends FragmentPagerAdapter {
     private final Context mContext;
+    private final Bundle mIntentExtras;
 
-    public TabAdapter(Context context, FragmentManager fm) {
+    public TabAdapter(Context context, FragmentManager fm, Bundle extras) {
         super(fm);
         mContext = context;
+        mIntentExtras = extras;
     }
 
     @Override
     public Fragment getItem(int i) {
         switch (i) {
             case 0:
-                return new EnterExpenseFragment();
+                Fragment f = new EnterExpenseFragment();
+                if (mIntentExtras != null) {
+                    f.setArguments(mIntentExtras);
+                }
+                return f;
             case 1:
                 return new ModifyCategoryFragment();
             case 2:

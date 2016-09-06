@@ -1,5 +1,6 @@
 package com.vinodkrishnan.expenses.view.fragment;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -22,6 +24,7 @@ import com.google.gson.Gson;
 import com.vinodkrishnan.expenses.R;
 import com.vinodkrishnan.expenses.tasks.GetRowsTask;
 import com.vinodkrishnan.expenses.util.CommonUtil;
+import com.vinodkrishnan.expenses.view.activity.MainActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.vinodkrishnan.expenses.util.CommonUtil.ROW_NUM_KEY;
 import static com.vinodkrishnan.expenses.util.CommonUtil.AMOUNT_COLUMN;
 import static com.vinodkrishnan.expenses.util.CommonUtil.BY_COLUMN;
 import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORIES_PREF_KEY;
@@ -136,10 +140,12 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
             }
         }
 
+        int rowNum = 1;
         if (history != null) {
             Iterator<Map<String, String>> iterator = history.iterator();
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
+                row.put(ROW_NUM_KEY, String.valueOf(rowNum++));
                 if (!ALL_CATEGORIES.equals(category) &&
                         !category.equals(row.get(CATEGORY_COLUMN))) {
                     iterator.remove();
@@ -202,7 +208,51 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                 rowDescription.setTextColor(Color.RED);
             }
         }
+        if (!isOffline) {
+            // Only set this if the rowNum is specified, basically, not for offline transactions.
+            setupEditSettings(row, rowValues);
+        }
         return row;
+    }
+
+    private void setupEditSettings(TableRow r, final Map<String, String> rowValues) {
+        r.findViewById(R.id.summary_row_edit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View editButton) {
+                Intent intent = new Intent(getContext(), MainActivity.class);
+                intent.putExtra(ROW_NUM_KEY, rowValues.get(ROW_NUM_KEY));
+                intent.putExtra(DATE_COLUMN, rowValues.get(DATE_COLUMN));
+                intent.putExtra(CATEGORY_COLUMN, rowValues.get(CATEGORY_COLUMN));
+                intent.putExtra(BY_COLUMN, rowValues.get(BY_COLUMN));
+                intent.putExtra(AMOUNT_COLUMN, rowValues.get(AMOUNT_COLUMN));
+                intent.putExtra(DESCRIPTION_COLUMN, rowValues.get(DESCRIPTION_COLUMN));
+                startActivity(intent);
+            }
+        });
+        r.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View row) {
+                TextView rowCategory = (TextView)row.findViewById(R.id.summary_row_category);
+                TextView rowBy = (TextView)row.findViewById(R.id.summary_row_by);
+                TextView rowDescription = (TextView)row.findViewById(R.id.summary_row_description);
+                Button rowEdit = (Button)row.findViewById(R.id.summary_row_edit);
+
+                boolean isEditMode = (rowEdit.getVisibility() == View.VISIBLE);
+                if (isEditMode) {
+                    // Swap modes.
+                    rowCategory.setVisibility(View.VISIBLE);
+                    rowBy.setVisibility(View.VISIBLE);
+                    rowDescription.setVisibility(View.VISIBLE);
+                    rowEdit.setVisibility(View.GONE);
+                } else {
+                    rowCategory.setVisibility(View.GONE);
+                    rowBy.setVisibility(View.GONE);
+                    rowDescription.setVisibility(View.GONE);
+                    rowEdit.setVisibility(View.VISIBLE);
+                }
+                return true;
+            }
+        });
     }
 
     private class GetHistoryListener implements GetRowsTask.GetRowsListener {

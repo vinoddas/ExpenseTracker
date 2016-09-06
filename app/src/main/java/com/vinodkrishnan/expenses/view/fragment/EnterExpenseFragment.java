@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.google.api.services.sheets.v4.model.CellData;
@@ -40,6 +41,7 @@ import static com.vinodkrishnan.expenses.util.CommonUtil.CATEGORY_COLUMN;
 import static com.vinodkrishnan.expenses.util.CommonUtil.DATE_COLUMN;
 import static com.vinodkrishnan.expenses.util.CommonUtil.DESCRIPTION_COLUMN;
 import static com.vinodkrishnan.expenses.util.CommonUtil.EXPENSES_PREF_KEY;
+import static com.vinodkrishnan.expenses.util.CommonUtil.ROW_NUM_KEY;
 
 public class EnterExpenseFragment extends Fragment implements View.OnClickListener, AddRowTask.AddRowListener {
     private final String TAG = "EnterExpenseFragment";
@@ -58,6 +60,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     private Spinner mTypeSpinner;
     private EditText mAmountEditText;
     private EditText mDescriptionEditText;
+    private TableRow mRowNumTableRow;
+    private TextView mRowNumTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,6 +76,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         mTypeSpinner = (Spinner) rootView.findViewById(R.id.enter_expense_type);
         mAmountEditText = (EditText) rootView.findViewById(R.id.enter_expense_amount);
         mDescriptionEditText = (EditText) rootView.findViewById(R.id.enter_expense_description);
+        mRowNumTableRow = (TableRow) rootView.findViewById(R.id.enter_expense_row_num);
+        mRowNumTextView = (TextView) rootView.findViewById(R.id.enter_expense_row_num_value);
         rootView.findViewById(R.id.enter_expense_add_expense_button).setOnClickListener(this);
         rootView.findViewById(R.id.enter_expense_pick_date).setOnClickListener(this);
 
@@ -82,6 +88,12 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setDefaults();
+        if (getArguments() != null && !getArguments().isEmpty()) {
+            mRowNumTableRow.setVisibility(View.VISIBLE);
+            setEditDefaults(getArguments());
+        } else {
+            mRowNumTableRow.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -146,13 +158,14 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
 
         Map<String, String> values = new HashMap<>();
         String date = mDateTextView.getText().toString();
-        values.put("Date", date);
+        values.put(DATE_COLUMN, date);
         // Set a negative number if it is Income.
-        values.put("Amount", new DecimalFormat("#.00").format(
+        values.put(AMOUNT_COLUMN, new DecimalFormat("#.00").format(
                 "Income".equals(type) ? -amount : amount));
-        values.put("Category", mCategorySpinner.getSelectedItem().toString());
-        values.put("By", mBySpinner.getSelectedItem().toString());
-        values.put("Description", mDescriptionEditText.getText().toString());
+        values.put(CATEGORY_COLUMN, mCategorySpinner.getSelectedItem().toString());
+        values.put(BY_COLUMN, mBySpinner.getSelectedItem().toString());
+        values.put(DESCRIPTION_COLUMN, mDescriptionEditText.getText().toString());
+        values.put(ROW_NUM_KEY, mRowNumTextView.getText().toString());
 
         return values;
     }
@@ -177,6 +190,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
                 new ExtendedValue().setStringValue(values.get(BY_COLUMN))));
         cellDataList.add(new CellData().setUserEnteredValue(
                 new ExtendedValue().setStringValue(values.get(DESCRIPTION_COLUMN))));
+        // TODO: Use RowNum to do something for editing.
         return cellDataList;
     }
 
@@ -199,6 +213,37 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
             }
         }
         mPrefs.edit().remove(EXPENSES_PREF_KEY).commit();
+    }
+
+    private void setEditDefaults(Bundle editArgs) {
+        // TODO: We expect all these fields to be set, log error.
+        mRowNumTextView.setText(editArgs.getString(ROW_NUM_KEY));
+        mDateTextView.setText(editArgs.getString(DATE_COLUMN));
+        int pos = CommonUtil.getPositionFromSpinner(
+                mCategorySpinner, editArgs.getString(CATEGORY_COLUMN));
+        if (pos >= 0) {
+            mCategorySpinner.setSelection(pos);
+        }
+        pos = CommonUtil.getPositionFromSpinner(mBySpinner, editArgs.getString(BY_COLUMN));
+        if (pos >= 0) {
+            mBySpinner.setSelection(pos);
+        }
+
+        mDescriptionEditText.setText(editArgs.getString(DESCRIPTION_COLUMN));
+        double amount = Double.parseDouble(editArgs.getString(AMOUNT_COLUMN));
+        if (amount > 0) {
+            mAmountEditText.setText(String.valueOf(amount));
+            pos = CommonUtil.getPositionFromSpinner(mTypeSpinner, "Expense");
+            if (pos >= 0) {
+                mTypeSpinner.setSelection(pos);
+            }
+        } else {
+            mAmountEditText.setText(String.valueOf(-amount));
+            pos = CommonUtil.getPositionFromSpinner(mTypeSpinner, "Income");
+            if (pos > 0) {
+                mTypeSpinner.setSelection(pos);
+            }
+        }
     }
 
     private void setDefaults() {

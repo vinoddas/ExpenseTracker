@@ -37,7 +37,8 @@ public class MainActivity extends FragmentActivity implements EasyPermissions.Pe
 
         // Initialization
         ((ViewPager) findViewById(R.id.pager))
-                .setAdapter(new TabAdapter(this, getSupportFragmentManager()));
+                .setAdapter(new TabAdapter(this, getSupportFragmentManager(),
+                        getIntent().getExtras()));
         CredentialStore.getInstance(this).loadCredentials();
     }
 

@@ -7,7 +7,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,10 +20,13 @@ import com.vinodkrishnan.expenses.view.activity.MainActivity;
 import com.vinodkrishnan.expenses.view.fragment.SettingsFragment;
 
 public class CommonUtil {
+    private static final String TAG = "CommonUtil";
+
     public static final String CATEGORIES_PREF_KEY = "com.vinodkrishnan.expenses.pref_categories";
     public static final String EXPENSES_PREF_KEY = "com.vinodkrishnan.expenses.pref_expenses";
     public static final String ACCOUNT_NAME_PREF_KEY = "com.vinodkrishnan.expenses.account_name";
 
+    public static final String ROW_NUM_KEY = "RowNum";  // Not actually set as a column.
     public static final String DATE_COLUMN = "Date";
     public static final String AMOUNT_COLUMN = "Amount";
     public static final String CATEGORY_COLUMN = "Category";
@@ -74,5 +80,21 @@ public class CommonUtil {
             final int connectionStatusCode) {
         GoogleApiAvailability.getInstance().getErrorDialog(activity, connectionStatusCode,
                 MainActivity.REQUEST_GOOGLE_PLAY_SERVICES).show();
+    }
+
+    public static int getPositionFromSpinner(Spinner spinner, String value) {
+        if (spinner == null || TextUtils.isEmpty(value) || spinner.getAdapter() == null) {
+            Log.e(TAG, "Either spinner is null or value is empty");
+            return -1;
+        }
+
+        SpinnerAdapter adapter = spinner.getAdapter();
+
+        for (int i = 0, size = adapter.getCount(); i < size; i++) {
+            if (TextUtils.equals(value, (String)adapter.getItem(i))) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

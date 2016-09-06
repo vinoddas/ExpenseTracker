@@ -49,9 +49,9 @@ public class SpreadsheetStore {
 
     public List<Map<String, String>> getValues(String spreadSheetId, String sheetName)
             throws IOException {
-        ValueRange response = getService().spreadsheets().values().get(spreadSheetId, sheetName)
+        ValueRange valueRange = getService().spreadsheets().values().get(spreadSheetId, sheetName)
                 .execute();
-        List<List<Object>> values = response.getValues();
+        List<List<Object>> values = valueRange.getValues();
         if (values != null && values.size() > 1) {
             List<Map<String, String>> mapValues = new ArrayList<>(values.size()-1);
 

@@ -2,8 +2,23 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:orientation="vertical"
              android:layout_width="fill_parent"
-             android:layout_height="fill_parent"
-        >
+             android:layout_height="fill_parent">
+    <TableRow
+        android:id="@+id/enter_expense_row_num"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="gone"
+        android:padding="5dip">
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center_vertical"
+            android:text="@string/row_num_text" />
+        <TextView
+            android:id="@+id/enter_expense_row_num_value"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+    </TableRow>
     <TableRow
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -115,7 +130,5 @@
                 android:layout_span="3"
                 android:text="@string/add_button"/>
     </TableRow>
-
-
 </TableLayout>
 
