@@ -54,7 +54,7 @@ public class ModifyCategoryFragment extends Fragment implements View.OnClickList
             return;
         }
 
-        new AddRowTask(activity, this, CommonUtil.getCategoriesSheetName(activity))
+        new AddRowTask(activity, this, CommonUtil.getCategoriesSheetName(activity), null)
                 .execute(Arrays.asList(new CellData[] {new CellData().setUserEnteredValue(
                                 new ExtendedValue().setStringValue(newCategory))}));
     }

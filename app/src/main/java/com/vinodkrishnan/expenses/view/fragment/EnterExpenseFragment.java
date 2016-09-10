@@ -25,6 +25,8 @@ import com.vinodkrishnan.expenses.tasks.GetRowsTask;
 import com.vinodkrishnan.expenses.util.CommonUtil;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -50,6 +52,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     private static final String TYPE_PREF_KEY = "com.vinodkrishnan.expenses.pref_type";
 
     private static final String CATEGORIES_CELL = "Categories";
+
+    private static final DecimalFormat AMOUNT_FORMAT = new DecimalFormat("#.00");
 
     private final Set<String> mCategories = new TreeSet<String>();
     private SharedPreferences mPrefs;
@@ -88,12 +92,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setDefaults();
-        if (getArguments() != null && !getArguments().isEmpty()) {
-            mRowNumTableRow.setVisibility(View.VISIBLE);
-            setEditDefaults(getArguments());
-        } else {
-            mRowNumTableRow.setVisibility(View.GONE);
-        }
+        setEditDefaults(getArguments());
     }
 
     @Override
@@ -160,7 +159,7 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         String date = mDateTextView.getText().toString();
         values.put(DATE_COLUMN, date);
         // Set a negative number if it is Income.
-        values.put(AMOUNT_COLUMN, new DecimalFormat("#.00").format(
+        values.put(AMOUNT_COLUMN, NumberFormat.getCurrencyInstance().format(
                 "Income".equals(type) ? -amount : amount));
         values.put(CATEGORY_COLUMN, mCategorySpinner.getSelectedItem().toString());
         values.put(BY_COLUMN, mBySpinner.getSelectedItem().toString());
@@ -172,7 +171,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
 
     private void addValues(Map<String, String> values) {
         String date = values.get("Date");
-        new AddRowTask(getActivity(), this, date.substring(date.lastIndexOf("/") + 1))
+        new AddRowTask(getActivity(), this, date.substring(date.lastIndexOf("/") + 1),
+                values.get(ROW_NUM_KEY))
                 .execute(convertMapToCellData(values));
     }
 
@@ -216,7 +216,12 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     }
 
     private void setEditDefaults(Bundle editArgs) {
-        // TODO: We expect all these fields to be set, log error.
+        if (editArgs == null || !editArgs.containsKey(ROW_NUM_KEY)) {
+            // TODO: We expect all these fields to be set, log error.
+            mRowNumTableRow.setVisibility(View.GONE);
+            return;
+        }
+        mRowNumTableRow.setVisibility(View.VISIBLE);
         mRowNumTextView.setText(editArgs.getString(ROW_NUM_KEY));
         mDateTextView.setText(editArgs.getString(DATE_COLUMN));
         int pos = CommonUtil.getPositionFromSpinner(
@@ -230,7 +235,14 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
         }
 
         mDescriptionEditText.setText(editArgs.getString(DESCRIPTION_COLUMN));
-        double amount = Double.parseDouble(editArgs.getString(AMOUNT_COLUMN));
+        double amount = 0;
+        try {
+            amount = NumberFormat.getCurrencyInstance().parse(editArgs.getString(AMOUNT_COLUMN))
+                    .doubleValue();
+        } catch (ParseException e) {
+            Log.w(TAG, "Could not parse " + editArgs.getString(AMOUNT_COLUMN));
+            e.printStackTrace();
+        }
         if (amount > 0) {
             mAmountEditText.setText(String.valueOf(amount));
             pos = CommonUtil.getPositionFromSpinner(mTypeSpinner, "Expense");
@@ -288,6 +300,8 @@ public class EnterExpenseFragment extends Fragment implements View.OnClickListen
     }
 
     private void resetFields() {
+        mRowNumTableRow.setVisibility(View.GONE);
+        mRowNumTextView.setText("");
         mAmountEditText.setText("");
         mDescriptionEditText.setText("");
         // Store the By field in prefs.

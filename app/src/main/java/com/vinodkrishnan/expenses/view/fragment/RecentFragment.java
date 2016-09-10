@@ -1,5 +1,7 @@
 package com.vinodkrishnan.expenses.view.fragment;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -22,6 +24,7 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.vinodkrishnan.expenses.R;
+import com.vinodkrishnan.expenses.tasks.DeleteRowTask;
 import com.vinodkrishnan.expenses.tasks.GetRowsTask;
 import com.vinodkrishnan.expenses.util.CommonUtil;
 import com.vinodkrishnan.expenses.view.activity.MainActivity;
@@ -110,8 +113,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
     }
 
     private void refreshHistoryAsync(String category) {
-        final Calendar cal = Calendar.getInstance();
-        String year = Integer.toString(cal.get(Calendar.YEAR));
+        String year = getCurrentSheetName();
         int numDays = 0;
         CharSequence numDaysCharSeq = mNumDaysTextView.getText();
         if (!TextUtils.isEmpty(numDaysCharSeq) && TextUtils.isDigitsOnly(numDaysCharSeq)) {
@@ -119,6 +121,11 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
         }
         mLastRefreshedTextView.setText(getActivity().getString(R.string.loading));
         new GetRowsTask(getActivity(), new GetHistoryListener(category, numDays)).execute(year);
+    }
+
+    private String getCurrentSheetName() {
+        final Calendar cal = Calendar.getInstance();
+        return Integer.toString(cal.get(Calendar.YEAR));
     }
 
     private void refreshHistoryWidget(List<Map<String, String>> history,
@@ -229,6 +236,34 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                 startActivity(intent);
             }
         });
+        r.findViewById(R.id.summary_row_delete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(getContext())
+                        .setCancelable(false)
+                        .setMessage(getString(R.string.confirm_delete_dialog_message,
+                                rowValues.get(AMOUNT_COLUMN), rowValues.get(DATE_COLUMN),
+                                rowValues.get(BY_COLUMN), rowValues.get(CATEGORY_COLUMN)))
+                        .setPositiveButton(R.string.confirm_delete_dialog_yes,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String year = getCurrentSheetName();
+                                        new DeleteRowTask(getActivity(), year,
+                                                rowValues.get(ROW_NUM_KEY)).execute();
+                                        refreshHistoryAsync(ALL_CATEGORIES);
+                                    }
+                        })
+                        .setNegativeButton(R.string.confirm_delete_dialog_no,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        refreshHistoryAsync(ALL_CATEGORIES);
+                                    }
+                                })
+                        .create().show();
+            }
+        });
         r.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View row) {
@@ -236,6 +271,7 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                 TextView rowBy = (TextView)row.findViewById(R.id.summary_row_by);
                 TextView rowDescription = (TextView)row.findViewById(R.id.summary_row_description);
                 Button rowEdit = (Button)row.findViewById(R.id.summary_row_edit);
+                Button rowDelete = (Button)row.findViewById(R.id.summary_row_delete);
 
                 boolean isEditMode = (rowEdit.getVisibility() == View.VISIBLE);
                 if (isEditMode) {
@@ -244,11 +280,13 @@ public class RecentFragment extends Fragment implements View.OnClickListener {
                     rowBy.setVisibility(View.VISIBLE);
                     rowDescription.setVisibility(View.VISIBLE);
                     rowEdit.setVisibility(View.GONE);
+                    rowDelete.setVisibility(View.GONE);
                 } else {
                     rowCategory.setVisibility(View.GONE);
                     rowBy.setVisibility(View.GONE);
                     rowDescription.setVisibility(View.GONE);
                     rowEdit.setVisibility(View.VISIBLE);
+                    rowDelete.setVisibility(View.VISIBLE);
                 }
                 return true;
             }

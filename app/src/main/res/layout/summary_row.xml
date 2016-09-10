@@ -25,5 +25,12 @@
         android:layout_height="fill_parent"
         android:text="@string/edit_button"
         android:visibility="gone"/>
+    <Button
+        android:id="@+id/summary_row_delete"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:text="@string/delete_button"
+        android:visibility="gone"/>
+
 
 </TableRow>

@@ -13,6 +13,7 @@
     <string name="add_button">Add</string>
     <string name="pick_date_button">Pick</string>
     <string name="edit_button">Edit</string>
+    <string name="delete_button">Delete</string>
     <string name="cancel_button">Cancel</string>
 
     <string name="number_days_text">Number of days</string>
@@ -25,6 +26,11 @@
 
     <string name="dialog_error">Error</string>
     <string name="dialog_ok">OK</string>
+
+    <string name="confirm_delete_dialog_message">Amount: %1$s\nOn: %2$s\nBy: %3$s\nCategory: "%4$s</string>
+    <string name="confirm_delete_dialog_yes">Yes</string>
+    <string name="confirm_delete_dialog_no">No</string>
+
 
     <string name="needs_permission">This app needs to access your Google account (via Contacts).</string>
     <string name="error_connect_spreadsheet">An error has occurred talking to the spreadsheet</string>

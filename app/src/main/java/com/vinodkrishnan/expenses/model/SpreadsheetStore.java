@@ -10,11 +10,15 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.model.AppendCellsRequest;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
+import com.google.api.services.sheets.v4.model.DimensionRange;
+import com.google.api.services.sheets.v4.model.GridCoordinate;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.SheetProperties;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.vinodkrishnan.expenses.R;
 
@@ -85,6 +89,55 @@ public class SpreadsheetStore {
                                 .setRows(Arrays.asList(new RowData[] {
                                         new RowData().setValues(cellDataList)
                                 })))
+                }));
+
+        getService().spreadsheets().batchUpdate(spreadSheetId, req).execute();
+    }
+
+    public void updateRow(String spreadSheetId, String sheetName, List<CellData> cellDataList,
+                          String rowNum)
+            throws IOException {
+        int sheetId = getSheetId(spreadSheetId, sheetName);
+        if (sheetId == -1) {
+            Log.e(TAG, "Could not find the sheetId for " + sheetName);
+            return;
+        }
+
+        final BatchUpdateSpreadsheetRequest req = new BatchUpdateSpreadsheetRequest()
+                .setRequests(Arrays.asList(new Request[] {
+                        new Request().setUpdateCells(new UpdateCellsRequest()
+                                .setStart(new GridCoordinate().setSheetId(sheetId)
+                                        .setRowIndex(Integer.parseInt(rowNum)))
+                                .setFields("*")
+                                .setRows(Arrays.asList(new RowData[] {
+                                        new RowData().setValues(cellDataList)
+                                })))
+                }));
+
+        getService().spreadsheets().batchUpdate(spreadSheetId, req).execute();
+    }
+
+    /**
+     *
+     * @param rowNumStr 0-indexed row number.
+     * @throws IOException
+     */
+    public void deleteRow(String spreadSheetId, String sheetName, String rowNumStr)
+            throws IOException {
+        int sheetId = getSheetId(spreadSheetId, sheetName);
+        if (sheetId == -1) {
+            Log.e(TAG, "Could not find the sheetId for " + sheetName);
+            return;
+        }
+
+        int rowNum = Integer.parseInt(rowNumStr);
+        Log.w(TAG, "Vinod: RowNum is: " + rowNum);
+        final BatchUpdateSpreadsheetRequest req = new BatchUpdateSpreadsheetRequest()
+                .setRequests(Arrays.asList(new Request[] {
+                        new Request().setDeleteDimension(new DeleteDimensionRequest()
+                                .setRange(new DimensionRange().setSheetId(sheetId)
+                                        .setDimension("ROWS")
+                                        .setStartIndex(rowNum).setEndIndex(rowNum + 1)))
                 }));
 
         getService().spreadsheets().batchUpdate(spreadSheetId, req).execute();
