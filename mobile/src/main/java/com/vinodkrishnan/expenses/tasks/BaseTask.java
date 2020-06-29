@@ -37,8 +37,7 @@ public abstract class BaseTask<Params, Progress, Result>
                         MainActivity.REQUEST_AUTHORIZATION);
             } else {
                 CommonUtil.showErrorDialog(mActivity, R.string.error_connect_spreadsheet);
-                Log.e(TAG, "The following error occurred:\n"
-                        + mLastError.getMessage());
+                Log.e(TAG, "The following error occurred: " + mLastError);
             }
         } else {
             Log.w(TAG, "Request was cancelled");
